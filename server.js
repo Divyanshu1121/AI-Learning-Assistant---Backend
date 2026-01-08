@@ -4,7 +4,8 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const errorHandle = require("./middleware/errorHandle");
 const authRoutes = require("./routes/authRoutes");
-
+const documentRoutes = require("./routes/documentRoutes");
+const path = require("path");
 dotenv.config();
 
 const app = express();
@@ -13,6 +14,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/documents", documentRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
     res.send("AI Learning Assistant API running...");
