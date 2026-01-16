@@ -135,10 +135,8 @@ exports.resetPassword = async (req, res, next) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         user.password = hashedPassword;
-
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
-
         await user.save();
 
         res.status(200).json({

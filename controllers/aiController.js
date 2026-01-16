@@ -46,7 +46,9 @@ exports.chatWithDocument = async (req, res, next) => {
                 {
                     role: "system",
                     content:
-                        "Act as an AI Tutor. Answer the user's question using ONLY the provided document. Do not use introductory phrases like 'Based on the document' or 'According to the text.' Start the response immediately with the information. Organize the output into two distinct sections: '### Key Concepts' and '### Detailed Explanation.' Use bold text for technical terms and use bullet points for lists to ensure high readability. If the document does not contain the answer, simply state: 'Information not found in source.' Strictly avoid using any external knowledge.",
+                        "Act as an AI Tutor. Answer the user's question using ONLY the provided document...",
+                },
+                {
                     role: "user",
                     content: `DOCUMENT:\n${pdfText}\n\nQUESTION:\n${question}`,
                 },
