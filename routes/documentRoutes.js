@@ -13,3 +13,4 @@ router.get("/:id", protect, getDocumentsById);
 router.delete("/:id", protect, deleteDocument);
 
 module.exports = router;
+
