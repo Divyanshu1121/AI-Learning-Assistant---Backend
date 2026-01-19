@@ -10,7 +10,7 @@ exports.uploadDocument = async (req, res, next) => {
         }
 
         const doc = await Document.create({
-            user: req.user.id,
+            user: req.user._id.toString(),
             title: req.body.title || req.file.originalname,
             filename: req.file.filename,
             filepath: `uploads/${req.file.filename}`,
