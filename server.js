@@ -11,6 +11,8 @@ const documentRoutes = require("./routes/documentRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const userRoutes = require("./routes/userRoutes");
 const flashcardRoutes = require("./routes/flashcardRoutes");
+const summaryRoutes = require("./routes/summaryRoutes");
+const quizRoutes = require("./routes/quizRoutes");
 const path = require("path");
 dotenv.config();
 
@@ -24,6 +26,8 @@ app.use("/api/documents", documentRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/flashcards", flashcardRoutes);
+app.use("/api/summary", summaryRoutes);
+app.use("/api/quizzes", quizRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
