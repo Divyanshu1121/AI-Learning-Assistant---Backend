@@ -28,7 +28,7 @@ const documentSchema = new mongoose.Schema(
             default: "",
         },
     },
-    { timestamp: true }
+    { timestamps: true }
 );
 
 module.exports = mongoose.model("Document", documentSchema);

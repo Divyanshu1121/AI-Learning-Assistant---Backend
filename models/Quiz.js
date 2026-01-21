@@ -16,7 +16,14 @@ const quizSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Document",
         required: true,
-        unique: true,
+    },
+    score: {
+        type: Number,
+        default: null,
+    },
+    accuracy: {
+        type: Number,
+        default: null,
     },
     questions: [questionSchema],
 },

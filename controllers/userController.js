@@ -21,7 +21,7 @@ exports.updateName = async (req, res, next) => {
         res.json({
             success: true,
             user: {
-                id: user._id,
+                id: user.id,
                 name: user.name,
                 email: user.email,
             },
