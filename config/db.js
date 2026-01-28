@@ -6,6 +6,8 @@ const connectDB = async () => {
         console.log("MongoDB Connected");
     } catch (error) {
         console.error("MongoDB connection failed:", error.message);
+        const fs = require('fs');
+        fs.writeFileSync('db_error.txt', `DB Connection Error: ${error.message}\n${error.stack}`);
         process.exit(1);
     }
 };

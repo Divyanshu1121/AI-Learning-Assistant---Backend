@@ -30,6 +30,7 @@ app.use("/api/flashcards", flashcardRoutes);
 app.use("/api/summary", summaryRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/search", require("./routes/searchRoutes"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
