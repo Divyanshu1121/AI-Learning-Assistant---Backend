@@ -43,6 +43,37 @@ exports.register = async (req, res, next) => {
     }
 };
 
+// Helper to update streak
+const updateStreak = async (user) => {
+    const today = new Date();
+    const lastLogin = user.lastLoginDate ? new Date(user.lastLoginDate) : null;
+
+    if (lastLogin) {
+        // Create dates without time for accurate day comparison
+        const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const lastLoginDate = new Date(lastLogin.getFullYear(), lastLogin.getMonth(), lastLogin.getDate());
+
+        const diffTime = Math.abs(todayDate - lastLoginDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) {
+            // Same day, do nothing
+        } else if (diffDays === 1) {
+            // Consecutive day
+            user.streak = (user.streak || 0) + 1;
+        } else {
+            // Missed a day
+            user.streak = 1;
+        }
+    } else {
+        user.streak = 1;
+    }
+
+    user.lastLoginDate = today;
+    await user.save();
+    return user;
+};
+
 exports.login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -52,7 +83,7 @@ exports.login = async (req, res, next) => {
             throw new Error("Email and Password Required");
         }
 
-        const user = await User.findOne({ email });
+        let user = await User.findOne({ email });
         if (!user) {
             res.status(401);
             throw new Error("Invalid Credentials");
@@ -64,13 +95,42 @@ exports.login = async (req, res, next) => {
             throw new Error("Invalid Credentials");
         }
 
-        res.status(201).json({
+        // Update streak
+        user = await updateStreak(user);
+
+        res.status(200).json({
             success: true,
             token: generateToken(user._id),
             user: {
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                streak: user.streak,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.getMe = async (req, res, next) => {
+    try {
+        let user = await User.findById(req.user.id);
+        if (!user) {
+            res.status(404);
+            throw new Error("User not found");
+        }
+
+        // Update streak on page load too!
+        user = await updateStreak(user);
+
+        res.status(200).json({
+            success: true,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                streak: user.streak,
             },
         });
     } catch (error) {
