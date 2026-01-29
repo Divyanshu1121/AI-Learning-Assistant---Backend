@@ -28,6 +28,21 @@ const userSchema = new mongoose.Schema(
         lastLoginDate: {
             type: Date,
             default: null
+        },
+        plan: {
+            type: String,
+            enum: ['free', 'pro'],
+            default: 'free'
+        },
+        subscriptionDate: {
+            type: Date,
+            default: Date.now
+        },
+        usage: {
+            documentsUploaded: { type: Number, default: 0 },
+            summariesGenerated: { type: Number, default: 0 },
+            flashcardsGenerated: { type: Number, default: 0 },
+            quizzesGenerated: { type: Number, default: 0 }
         }
     },
     { timestamps: true }

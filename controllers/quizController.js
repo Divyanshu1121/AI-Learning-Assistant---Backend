@@ -14,6 +14,14 @@ exports.generateQuiz = async (req, res, next) => {
             user: req.user._id,
         });
 
+        const { checkLimit, incrementUsage } = require("../services/subscriptionService");
+        try {
+            checkLimit(req.user, 'quizzes');
+        } catch (e) {
+            res.status(403);
+            throw e;
+        }
+
         if (!document) {
             return res.status(404).json({ message: "Document not found" });
         }
@@ -81,6 +89,8 @@ JSON FORMAT:
             document: document._id,
             questions: parsed.questions,
         });
+
+        await incrementUsage(req.user, 'quizzes');
 
         res.json({ success: true, quiz });
     } catch (error) {

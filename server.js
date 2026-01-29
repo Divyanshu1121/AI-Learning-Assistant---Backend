@@ -29,7 +29,9 @@ app.use("/api/user", userRoutes);
 app.use("/api/flashcards", flashcardRoutes);
 app.use("/api/summary", summaryRoutes);
 app.use("/api/quizzes", quizRoutes);
+app.use("/api/quizzes", quizRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/payment", require("./routes/paymentRoutes"));
 app.use("/api/search", require("./routes/searchRoutes"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

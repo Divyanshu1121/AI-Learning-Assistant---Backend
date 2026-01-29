@@ -9,6 +9,11 @@ exports.generateSummary = async (req, res, next) => {
     try {
         const { id } = req.params;
 
+        const { checkLimit, incrementUsage } = require("../services/subscriptionService");
+
+        // Check limit before processing
+        checkLimit(req.user, "summaries");
+
         const document = await Document.findOne({
             _id: id,
             user: req.user._id,
@@ -19,13 +24,7 @@ exports.generateSummary = async (req, res, next) => {
             throw new Error("Document not found");
         }
 
-        const existing = await Summary.findOne({ document: document._id });
-        if (existing) {
-            return res.json({
-                success: true,
-                summary: existing.content,
-            });
-        }
+
 
         const filePath = path.join(__dirname, "..", document.filepath);
         const buffer = fs.readFileSync(filePath);
@@ -40,7 +39,7 @@ exports.generateSummary = async (req, res, next) => {
                 {
                     role: "system",
                     content:
-                        "Generate a concise study summary with headings and bullet points. Do not add external info.",
+                        "Generate a structured study summary using clear HEADINGS and BULLET POINTS. No long paragraphs. Max 15 words per bullet. No emojis. Do not add external info.",
                 },
                 { role: "user", content: text },
             ],
@@ -50,11 +49,13 @@ exports.generateSummary = async (req, res, next) => {
         const summaryText =
             completion.choices[0].message.content || "No summary generated";
 
-        const summary = await Summary.create({
-            user: req.user._id,
-            document: document._id,
-            content: summaryText,
-        });
+        const summary = await Summary.findOneAndUpdate(
+            { document: document._id, user: req.user._id },
+            { content: summaryText },
+            { new: true, upsert: true }
+        );
+
+        await incrementUsage(req.user, "summaries");
 
         res.json({
             success: true,
