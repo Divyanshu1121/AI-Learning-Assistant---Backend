@@ -2,12 +2,37 @@ const Document = require("../models/Document");
 const fs = require("fs")
 const path = require("path");
 
+const getRandomGradient = () => {
+    const gradients = [
+        "bg-gradient-to-br from-indigo-500 to-purple-600",
+        "bg-gradient-to-br from-blue-500 to-cyan-400",
+        "bg-gradient-to-br from-emerald-400 to-cyan-500",
+        "bg-gradient-to-br from-rose-500 to-pink-600",
+        "bg-gradient-to-br from-amber-400 to-orange-500",
+        "bg-gradient-to-br from-fuchsia-500 to-purple-600",
+        "bg-gradient-to-br from-sky-400 to-blue-500",
+    ];
+    return gradients[Math.floor(Math.random() * gradients.length)];
+};
+
 exports.uploadDocument = async (req, res, next) => {
     try {
+
+        const { checkLimit, incrementUsage } = require("../services/subscriptionService");
+
         if (!req.file) {
             res.status(400);
             throw new Error("No File Uploaded");
         }
+
+        // Check if user has reached document limit
+        try {
+            checkLimit(req.user, 'documents');
+        } catch (e) {
+            res.status(403);
+            throw e;
+        }
+
 
         const doc = await Document.create({
             user: req.user._id.toString(),
@@ -15,7 +40,10 @@ exports.uploadDocument = async (req, res, next) => {
             filename: req.file.filename,
             filepath: `uploads/${req.file.filename}`,
             filesize: req.file.size,
+            thumbnail: getRandomGradient(),
         });
+
+        await incrementUsage(req.user, 'documents');
 
         res.status(201).json(doc);
     } catch (error) {

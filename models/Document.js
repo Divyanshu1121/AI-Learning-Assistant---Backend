@@ -27,6 +27,10 @@ const documentSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        thumbnail: {
+            type: String, // verification: css gradient string
+            default: "bg-gradient-to-br from-blue-500 to-indigo-600",
+        },
     },
     { timestamps: true }
 );

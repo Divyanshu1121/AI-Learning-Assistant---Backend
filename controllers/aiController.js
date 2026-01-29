@@ -3,6 +3,7 @@ const path = require("path");
 const pdfParse = require("pdf-parse");
 const Document = require("../models/Document");
 const Groq = require("groq-sdk");
+const ChatHistory = require("../models/ChatHistory");
 
 exports.chatWithDocument = async (req, res, next) => {
     try {
@@ -13,6 +14,9 @@ exports.chatWithDocument = async (req, res, next) => {
             res.status(400);
             throw new Error("Question is required");
         }
+
+        const { checkLimit } = require("../services/subscriptionService");
+        checkLimit(req.user, 'chat');
 
         if (!process.env.GROQ_API_KEY) {
             throw new Error("GROQ_API_KEY not found in environment");
@@ -45,8 +49,19 @@ exports.chatWithDocument = async (req, res, next) => {
             messages: [
                 {
                     role: "system",
-                    content:
-                        "Act as an AI Tutor. Answer the user's question using ONLY the provided document...",
+                    content: `You are an expert AI Teacher.
+
+BEHAVIOR RULES:
+1. Use the provided document as your PRIMARY source, but use general domain knowledge to ELABORATE and explain concepts fully.
+2. Handle greetings/small talk (e.g., "ok", "thanks") politely and briefly without searching the document.
+
+FORMATTING RULES:
+- Use clear HEADINGS for sections.
+- Use BULLET POINTS for details.
+- Each bullet must be CONCISE (max 15 words).
+- NO emojis.
+- NO long paragraphs; use structured lists.
+- Avoid extra explanations outside distinct sections.`,
                 },
                 {
                     role: "user",
@@ -56,9 +71,18 @@ exports.chatWithDocument = async (req, res, next) => {
             temperature: 0.3,
         });
 
+
         const answer =
             completion.choices?.[0]?.message?.content ||
             "No answer generated";
+
+        // Save chat history
+        await ChatHistory.create({
+            user: req.user._id,
+            document: id,
+            question,
+            answer,
+        });
 
         res.json({ answer });
     } catch (error) {

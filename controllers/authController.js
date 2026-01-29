@@ -35,6 +35,8 @@ exports.register = async (req, res, next) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                plan: user.plan,
+                usage: user.usage,
             },
         });
     }
@@ -106,6 +108,8 @@ exports.login = async (req, res, next) => {
                 name: user.name,
                 email: user.email,
                 streak: user.streak,
+                plan: user.plan,
+                usage: user.usage,
             },
         });
     } catch (error) {
@@ -131,6 +135,8 @@ exports.getMe = async (req, res, next) => {
                 name: user.name,
                 email: user.email,
                 streak: user.streak,
+                plan: user.plan,
+                usage: user.usage,
             },
         });
     } catch (error) {

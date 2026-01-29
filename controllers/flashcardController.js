@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const pdfParse = require("pdf-parse");
 const Groq = require("groq-sdk");
+const { checkLimit, incrementUsage } = require("../services/subscriptionService");
 
 exports.generateFlashcards = async (req, res, next) => {
     try {
@@ -71,6 +72,7 @@ exports.generateFlashcards = async (req, res, next) => {
         }));
 
         const saved = await Flashcard.insertMany(flashcardsToInsert);
+        await incrementUsage(req.user, 'flashcards');
 
         res.json({ success: true, flashcards: saved });
     } catch (err) {
@@ -84,6 +86,13 @@ exports.getFlashcardsByDocument = async (req, res, next) => {
             document: req.params.documentId,
             user: req.user._id.toString(),
         });
+
+        try {
+            checkLimit(req.user, 'flashcards');
+        } catch (e) {
+            res.status(403);
+            throw e;
+        }
 
         res.status(200).json({
             success: true,
