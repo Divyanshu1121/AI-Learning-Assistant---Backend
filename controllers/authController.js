@@ -2,6 +2,10 @@ const User = require("../models/User");
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const { OAuth2Client } = require('google-auth-library');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -95,6 +99,60 @@ exports.login = async (req, res, next) => {
         if (!isMatch) {
             res.status(401);
             throw new Error("Invalid Credentials");
+        }
+
+        // Update streak
+        user = await updateStreak(user);
+
+        res.status(200).json({
+            success: true,
+            token: generateToken(user._id),
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                streak: user.streak,
+                plan: user.plan,
+                usage: user.usage,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.googleLogin = async (req, res, next) => {
+    try {
+        const { token } = req.body;
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const { name, email, sub: googleId } = ticket.getPayload();
+
+        let user = await User.findOne({ email });
+
+        if (user) {
+            // User exists, log them in
+            if (!user.googleId) {
+                user.googleId = googleId;
+                await user.save();
+            }
+            if (!user.provider) {
+                // Backward compatibility or default safe behavior
+                // user.provider = 'google'; // Optional: update provider
+                await user.save();
+            }
+        } else {
+            // Create new user
+            user = await User.create({
+                name,
+                email,
+                provider: 'google',
+                googleId,
+                // No password for Google users
+            });
         }
 
         // Update streak
